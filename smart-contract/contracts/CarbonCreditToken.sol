@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract CarbonCreditToken is ERC1155, ERC1155Burnable, ERC1155Supply, Ownable {
 
@@ -48,7 +49,7 @@ contract CarbonCreditToken is ERC1155, ERC1155Burnable, ERC1155Supply, Ownable {
             payable(msg.sender).transfer(msg.value - cost);
         }
 
-        string memory eventString = string(abi.encodePacked(msg.sender, " ", "bought", " ", amount, " credits"));   
+        string memory eventString = string(abi.encodePacked(Strings.toHexString(msg.sender), " ", "bought", " ", Strings.toString(amount), " credits"));   
         tokenContractEvents.push(eventString);
 
         emit CreditsBought(msg.sender, amount);
@@ -62,7 +63,7 @@ contract CarbonCreditToken is ERC1155, ERC1155Burnable, ERC1155Supply, Ownable {
         );
         _burn(msg.sender, reportingPeriod, amount);
 
-        string memory eventString = string(abi.encodePacked(msg.sender, " ", "consumed", " ", amount, " credits"));
+        string memory eventString = string(abi.encodePacked(Strings.toHexString(msg.sender), " ", "consumed", " ", Strings.toString(amount), " credits"));
         tokenContractEvents.push(eventString);
 
         emit CreditsConsumed(msg.sender, amount);
@@ -79,7 +80,7 @@ contract CarbonCreditToken is ERC1155, ERC1155Burnable, ERC1155Supply, Ownable {
     function listCredits(uint256 amount) external onlyOwner {
         _mint(owner(), reportingPeriod, amount, "");
 
-        string memory eventString = string(abi.encodePacked(owner(), " ", "listed", " ", amount, " credits"));
+        string memory eventString = string(abi.encodePacked(Strings.toHexString(owner()), " ", "listed", " ", Strings.toString(amount), " credits"));
         tokenContractEvents.push(eventString);
 
         emit CreditsListed(amount);
@@ -88,7 +89,7 @@ contract CarbonCreditToken is ERC1155, ERC1155Burnable, ERC1155Supply, Ownable {
     function setPricePerCredit(uint256 _pricePerCredit) external onlyOwner {
         pricePerCredit = _pricePerCredit;
 
-        string memory eventString = string(abi.encodePacked(owner(), " ", "set price per credit to", " ", _pricePerCredit));
+        string memory eventString = string(abi.encodePacked(Strings.toHexString(owner()), " ", "set price per credit to", " ", Strings.toString(_pricePerCredit)));
         tokenContractEvents.push(eventString);
 
         emit PricePerCreditSet(_pricePerCredit);
@@ -97,7 +98,7 @@ contract CarbonCreditToken is ERC1155, ERC1155Burnable, ERC1155Supply, Ownable {
     function updateReportingPeriod() external onlyOwner {
         reportingPeriod++;
 
-        string memory eventString = string(abi.encodePacked(owner(), " ", "updated reporting period to", " ", reportingPeriod));
+        string memory eventString = string(abi.encodePacked(Strings.toHexString(owner()), " ", "updated reporting period to", " ", Strings.toString(reportingPeriod)));
         tokenContractEvents.push(eventString);
 
         emit ReportingPeriodUpdated(reportingPeriod);

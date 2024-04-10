@@ -15,7 +15,7 @@ contract CsvCore {
     // Events
     event ProjectTokenCreated(address indexed owner, address projectTokenAddress);
 
-    function createCarbonCreditToken(address owner) external {
+    function createCarbonCreditToken(address owner) external returns (address){
         require(msg.sender == tx.origin, "Only EOA allowed");
 
         // Create new instance of CarbonCreditToken
@@ -24,13 +24,15 @@ contract CsvCore {
         // Store the project token address to the owner's address
         projectTokensByOwner[owner].push(address(token));
 
-        string memory eventString = string(abi.encodePacked(owner, " ", "created a new project:", " ", address(token)));
+        string memory eventString = string(abi.encodePacked(Strings.toHexString(owner), " ", "created a new project:", " ", Strings.toHexString(address(token))));
 
         // Store event in coreContractEvents
         coreContractEvents.push(eventString);
 
         // Emit the project token creation event
         emit ProjectTokenCreated(owner, address(token));
+
+        return address(token);
     }
 
     function getProjectTokensByOwner(address owner) external view returns (address[] memory) {
