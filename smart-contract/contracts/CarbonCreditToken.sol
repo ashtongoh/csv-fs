@@ -7,8 +7,11 @@ import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
 
 contract CarbonCreditToken is ERC1155, ERC1155Burnable, ERC1155Supply, Ownable {
-    
+
     constructor(address initialOwner) ERC1155("") Ownable(initialOwner) {}
+
+    // To store all the events as string
+    string[] public tokenContractEvents;
 
     // Create counter for reporting period
     uint256 public reportingPeriod = 0;
@@ -45,9 +48,13 @@ contract CarbonCreditToken is ERC1155, ERC1155Burnable, ERC1155Supply, Ownable {
             payable(msg.sender).transfer(msg.value - cost);
         }
 
+        string memory eventString = string(abi.encodePacked(msg.sender, " ", "bought", " ", amount, " credits"));   
+        tokenContractEvents.push(eventString);
+
         emit CreditsBought(msg.sender, amount);
     }
 
+    // Probably need not use this function at all
     function consumeCredits(uint256 amount) external {
         require(
             balanceOf(msg.sender, reportingPeriod) >= amount,
@@ -55,27 +62,43 @@ contract CarbonCreditToken is ERC1155, ERC1155Burnable, ERC1155Supply, Ownable {
         );
         _burn(msg.sender, reportingPeriod, amount);
 
+        string memory eventString = string(abi.encodePacked(msg.sender, " ", "consumed", " ", amount, " credits"));
+        tokenContractEvents.push(eventString);
+
         emit CreditsConsumed(msg.sender, amount);
+    }
+
+    function getTokenContractEvents() external view returns (string[] memory) {
+        return tokenContractEvents;
     }
 
     ////////////////////// 
     // Owner functions
     /////////////////////
 
-    function listCredits(uint256 amount) public onlyOwner {
+    function listCredits(uint256 amount) external onlyOwner {
         _mint(owner(), reportingPeriod, amount, "");
+
+        string memory eventString = string(abi.encodePacked(owner(), " ", "listed", " ", amount, " credits"));
+        tokenContractEvents.push(eventString);
 
         emit CreditsListed(amount);
     }
 
-    function setPricePerCredit(uint256 _pricePerCredit) public onlyOwner {
+    function setPricePerCredit(uint256 _pricePerCredit) external onlyOwner {
         pricePerCredit = _pricePerCredit;
+
+        string memory eventString = string(abi.encodePacked(owner(), " ", "set price per credit to", " ", _pricePerCredit));
+        tokenContractEvents.push(eventString);
 
         emit PricePerCreditSet(_pricePerCredit);
     }
 
-    function updateReportingPeriod() public onlyOwner {
+    function updateReportingPeriod() external onlyOwner {
         reportingPeriod++;
+
+        string memory eventString = string(abi.encodePacked(owner(), " ", "updated reporting period to", " ", reportingPeriod));
+        tokenContractEvents.push(eventString);
 
         emit ReportingPeriodUpdated(reportingPeriod);
     }
